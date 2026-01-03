@@ -1,11 +1,10 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class MainManager : MonoBehaviour
 {
+    [Header("Vanilla")]
     public Brick BrickPrefab;
     public int LineCount = 6;
     public Rigidbody Ball;
@@ -18,6 +17,11 @@ public class MainManager : MonoBehaviour
     
     private bool m_GameOver = false;
 
+    [Header("Mine")]
+    public Text Best;
+    
+    public string Name;
+    public int Score;
     
     // Start is called before the first frame update
     void Start()
@@ -36,6 +40,10 @@ public class MainManager : MonoBehaviour
                 brick.onDestroyed.AddListener(AddPoint);
             }
         }
+        //On first frame, loads the best saved results to display above the score counter
+        Score = StoredData.Instance.Score;
+        Name = StoredData.Instance.BestName;
+        Best.text = "Best Score: " + Name + " : " + Score;
     }
 
     private void Update()
@@ -59,6 +67,10 @@ public class MainManager : MonoBehaviour
             {
                 SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
             }
+            if (Input.GetKeyDown(KeyCode.Escape))
+            {
+                SceneManager.LoadScene(0);
+            }
         }
     }
 
@@ -72,5 +84,14 @@ public class MainManager : MonoBehaviour
     {
         m_GameOver = true;
         GameOverText.SetActive(true);
+        //On game over, when current points are higher than the saved points, sets the new high score to the current score
+        //and sets the current name as the best score name, also updates the best saved results in case the record is beaten
+        if (m_Points > StoredData.Instance.Score)
+        {
+        StoredData.Instance.Score = m_Points;
+        StoredData.Instance.BestName = StoredData.Instance.Name;
+        StoredData.Instance.SaveAll();
+        }
+        Best.text = "Best Score: " + StoredData.Instance.BestName + " : " + Score;
     }
 }
